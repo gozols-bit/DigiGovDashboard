@@ -191,38 +191,59 @@ def get_eaddress_data():
                     break
             return base_fiz, base_jur
 
-        # 7-day streak + yesterday
+        # Current totals (latest cumulative record)
+        total_fiziska = act_records[-1]["fiziska"] if act_records else 0
+        total_juridiska = act_records[-1]["juridiska"] if act_records else 0
+
+        # Last 4 months of activated/deactivated
+        # Use the monthly rate data and multiply by days in each month
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        streak_fiziska = []
-        streak_juridiska = []
-        for days_ago in range(7, 0, -1):
-            day = today - timedelta(days=days_ago)
-            act_fiz, act_jur = _find_rate(act_rates, day)
-            deact_fiz, deact_jur = _find_rate(deact_rates, day)
-            a_fiz = vary(act_fiz, day, "fiz")
-            a_jur = vary(act_jur, day, "jur")
-            d_fiz = vary(deact_fiz, day, "deact_fiz")
-            d_jur = vary(deact_jur, day, "deact_jur")
-            streak_fiziska.append({
-                "date": day.strftime("%a"),
-                "activated": a_fiz,
-                "deactivated": d_fiz,
-                "net": a_fiz - d_fiz,
+        monthly_fiziska = []
+        monthly_juridiska = []
+
+        for m in range(4, 0, -1):
+            # Go back m months from today
+            month_date = today.replace(day=1) - timedelta(days=m * 30)
+            month_date = month_date.replace(day=1)
+            # Next month start
+            if month_date.month == 12:
+                next_month = month_date.replace(year=month_date.year + 1, month=1)
+            else:
+                next_month = month_date.replace(month=month_date.month + 1)
+            days_in_month = (next_month - month_date).days
+
+            month_act_fiz = 0
+            month_act_jur = 0
+            month_deact_fiz = 0
+            month_deact_jur = 0
+            for d in range(days_in_month):
+                day = month_date + timedelta(days=d)
+                act_fiz, act_jur = _find_rate(act_rates, day)
+                deact_fiz, deact_jur = _find_rate(deact_rates, day)
+                month_act_fiz += vary(act_fiz, day, "fiz")
+                month_act_jur += vary(act_jur, day, "jur")
+                month_deact_fiz += vary(deact_fiz, day, "deact_fiz")
+                month_deact_jur += vary(deact_jur, day, "deact_jur")
+
+            month_label = month_date.strftime("%b")
+            monthly_fiziska.append({
+                "label": month_label,
+                "activated": month_act_fiz,
+                "deactivated": month_deact_fiz,
             })
-            streak_juridiska.append({
-                "date": day.strftime("%a"),
-                "activated": a_jur,
-                "deactivated": d_jur,
-                "net": a_jur - d_jur,
+            monthly_juridiska.append({
+                "label": month_label,
+                "activated": month_act_jur,
+                "deactivated": month_deact_jur,
             })
 
         print(f"  Got {len(chart_records)} months of e-address data!")
         return {
             "records": chart_records,
-            "yesterday_fiziska": streak_fiziska[-1],
-            "yesterday_juridiska": streak_juridiska[-1],
-            "streak_fiziska": streak_fiziska,
-            "streak_juridiska": streak_juridiska,
+            "total_fiziska": total_fiziska,
+            "total_juridiska": total_juridiska,
+            "monthly_fiziska": monthly_fiziska,
+            "monthly_juridiska": monthly_juridiska,
         }
     except Exception as e:
         print(f"  Error fetching e-address data: {e}")
@@ -623,7 +644,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 50px 20px 20px 20px;
             color: #ffffff;
         }}
 
@@ -633,13 +654,20 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         }}
 
         header {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 100px;
+            margin-bottom: 75px;
+        }}
+
+        .header-left {{
             text-align: center;
-            margin-bottom: 40px;
         }}
 
         h1 {{
             font-size: 2.5em;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             background: linear-gradient(90deg, #00d9ff, #00ff88);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -649,6 +677,21 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         .date {{
             color: #888;
             font-size: 1.1em;
+        }}
+
+        .header-quote {{
+            max-width: 320px;
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }}
+
+        .header-quote .quote-author {{
+            color: #00ff88;
+            font-style: normal;
+            font-size: 0.9em;
+            margin-top: 4px;
         }}
 
         .section {{
@@ -688,24 +731,6 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 
         .news-item a:hover {{
             color: #00ff88;
-        }}
-
-        .quote-box {{
-            text-align: center;
-            padding: 30px;
-        }}
-
-        .quote-text {{
-            font-size: 1.4em;
-            font-style: italic;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: #f0f0f0;
-        }}
-
-        .quote-author {{
-            color: #00ff88;
-            font-size: 1.1em;
         }}
 
         .news-row {{
@@ -793,17 +818,17 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         }}
 
         .chart-container {{
-            overflow-x: auto;
+            overflow-x: hidden;
             padding-bottom: 10px;
         }}
 
         .chart {{
             display: flex;
             align-items: flex-end;
-            gap: 3px;
+            gap: 2px;
             height: 220px;
-            min-width: max-content;
-            padding: 0 5px;
+            width: 100%;
+            padding: 0;
         }}
 
         .chart-bar-group {{
@@ -811,6 +836,8 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
             flex-direction: column;
             align-items: center;
             gap: 2px;
+            flex: 1;
+            min-width: 0;
         }}
 
         .chart-bars {{
@@ -818,10 +845,13 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
             align-items: flex-end;
             gap: 1px;
             height: 190px;
+            width: 100%;
+            justify-content: center;
         }}
 
         .chart-bar {{
-            width: 8px;
+            width: 45%;
+            max-width: 12px;
             border-radius: 2px 2px 0 0;
             transition: opacity 0.2s;
             position: relative;
@@ -870,7 +900,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         .tabs {{
             display: flex;
             gap: 4px;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             justify-content: center;
         }}
 
@@ -1107,8 +1137,14 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 <body>
     <div class="container">
         <header>
-            <h1>Daily Dashboard</h1>
-            <p class="date">{today}</p>
+            <div class="header-left">
+                <h1>Daily Dashboard</h1>
+                <p class="date">{today}</p>
+            </div>
+            <div class="header-quote">
+                "{quote['quote']}"
+                <div class="quote-author">— {quote['author']}</div>
+            </div>
         </header>
 
         <!-- TABS -->
@@ -1120,15 +1156,6 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         <!-- DAILY TAB -->
         <div id="tab-daily" class="tab-content active">
 
-        <!-- INSPIRATION QUOTE -->
-        <div class="section">
-            <h2>Inspiration</h2>
-            <div class="quote-box">
-                <p class="quote-text">"{quote['quote']}"</p>
-                <p class="quote-author">- {quote['author']}</p>
-            </div>
-        </div>
-
 """
 
     # Add e-address section if data is available
@@ -1136,37 +1163,46 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         records = eaddress_data["records"]
         max_val = max(max(r["fiziska"] for r in records), max(r["juridiska"] for r in records)) or 1
 
-        # Build streak HTML (shows net = activated - deactivated)
-        def _streak_html(streak_data):
+        total_fiz = eaddress_data["total_fiziska"]
+        total_jur = eaddress_data["total_juridiska"]
+
+        # Build monthly HTML rows with month labels in header
+        monthly_fiz = eaddress_data["monthly_fiziska"]
+        monthly_jur = eaddress_data["monthly_juridiska"]
+
+        def _monthly_html(monthly_data):
             parts = ""
-            for s in streak_data:
-                net = s["net"]
-                css_class = "positive" if net >= 0 else "negative"
-                prefix = "+" if net >= 0 else ""
-                parts += f'<div class="streak-day"><div class="streak-val {css_class}">{prefix}{net:,}</div><div class="streak-label">{s["date"]}</div></div>'
+            for w in monthly_data:
+                parts += f'<span style="margin-right:10px;"><span style="color:#00ff88">+{w["activated"]:,}</span> <span style="color:#cc4444">(-{w["deactivated"]:,})</span></span>'
             return parts
 
-        streak_fiz_html = _streak_html(eaddress_data["streak_fiziska"])
-        streak_jur_html = _streak_html(eaddress_data["streak_juridiska"])
+        monthly_fiz_html = _monthly_html(monthly_fiz)
+        monthly_jur_html = _monthly_html(monthly_jur)
 
-        y_fiz = eaddress_data["yesterday_fiziska"]
-        y_jur = eaddress_data["yesterday_juridiska"]
+        fiz_month_labels = ", ".join(w["label"] for w in monthly_fiz)
+        jur_month_labels = ", ".join(w["label"] for w in monthly_jur)
 
         html += f"""        <!-- E-ADDRESS DATA -->
         <div class="section">
             <h2>E-Address (e-adrese)</h2>
             <div class="metric-cards">
                 <div class="metric-card">
-                    <div class="metric-main">+{y_fiz['activated']:,}</div>
-                    <div class="metric-deact">-{y_fiz['deactivated']:,}</div>
-                    <div class="metric-label">Yesterday / Natural persons</div>
-                    <div class="streak">{streak_fiz_html}</div>
+                    <div class="metric-main">{total_fiz:,}</div>
+                    <div class="metric-label">Natural persons — Total</div>
+                    <div style="margin-top:14px;"></div>
+                    <div class="metric-main">{total_jur:,}</div>
+                    <div class="metric-label">Legal entities — Total</div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-main">+{y_jur['activated']:,}</div>
-                    <div class="metric-deact">-{y_jur['deactivated']:,}</div>
-                    <div class="metric-label">Yesterday / Legal entities</div>
-                    <div class="streak">{streak_jur_html}</div>
+                <div class="metric-card" style="text-align:left;">
+                    <div class="metric-label" style="text-align:center;margin-bottom:10px;font-size:0.9em;">Last 4 Months</div>
+                    <div style="margin-bottom:8px;">
+                        <div class="metric-label" style="margin-bottom:4px;">Natural persons ({fiz_month_labels})</div>
+                        <div>{monthly_fiz_html}</div>
+                    </div>
+                    <div>
+                        <div class="metric-label" style="margin-bottom:4px;">Legal entities ({jur_month_labels})</div>
+                        <div>{monthly_jur_html}</div>
+                    </div>
                 </div>
             </div>
             <div class="chart-container">
@@ -1323,26 +1359,29 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 
 """
 
-    html += """        </div><!-- end Monday tab -->
+    refresh_time = datetime.now().strftime("%m/%d/%Y %H:%M")
+
+    html += f"""        </div><!-- end Monday tab -->
 
         <footer>
             <p>Built with Python | Your First AI Agent</p>
+            <p style="margin-top: 6px;">Last refresh: {refresh_time}</p>
         </footer>
     </div>
 
     <script>
-    function switchTab(name) {
+    function switchTab(name) {{
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab-' + name).classList.add('active');
         event.target.classList.add('active');
-    }
-    function toggleSummary(id) {
+    }}
+    function toggleSummary(id) {{
         var el = document.getElementById(id);
         el.classList.toggle('open');
         var arrow = el.parentElement.querySelector('.toggle-arrow');
         if (arrow) arrow.style.transform = el.classList.contains('open') ? 'rotate(90deg)' : '';
-    }
+    }}
     </script>
 </body>
 </html>

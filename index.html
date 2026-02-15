@@ -16,7 +16,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 50px 20px 20px 20px;
             color: #ffffff;
         }
 
@@ -26,13 +26,20 @@
         }
 
         header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 100px;
+            margin-bottom: 75px;
+        }
+
+        .header-left {
             text-align: center;
-            margin-bottom: 40px;
         }
 
         h1 {
             font-size: 2.5em;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             background: linear-gradient(90deg, #00d9ff, #00ff88);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -42,6 +49,21 @@
         .date {
             color: #888;
             font-size: 1.1em;
+        }
+
+        .header-quote {
+            max-width: 320px;
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .header-quote .quote-author {
+            color: #00ff88;
+            font-style: normal;
+            font-size: 0.9em;
+            margin-top: 4px;
         }
 
         .section {
@@ -81,24 +103,6 @@
 
         .news-item a:hover {
             color: #00ff88;
-        }
-
-        .quote-box {
-            text-align: center;
-            padding: 30px;
-        }
-
-        .quote-text {
-            font-size: 1.4em;
-            font-style: italic;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: #f0f0f0;
-        }
-
-        .quote-author {
-            color: #00ff88;
-            font-size: 1.1em;
         }
 
         .news-row {
@@ -186,17 +190,17 @@
         }
 
         .chart-container {
-            overflow-x: auto;
+            overflow-x: hidden;
             padding-bottom: 10px;
         }
 
         .chart {
             display: flex;
             align-items: flex-end;
-            gap: 3px;
+            gap: 2px;
             height: 220px;
-            min-width: max-content;
-            padding: 0 5px;
+            width: 100%;
+            padding: 0;
         }
 
         .chart-bar-group {
@@ -204,6 +208,8 @@
             flex-direction: column;
             align-items: center;
             gap: 2px;
+            flex: 1;
+            min-width: 0;
         }
 
         .chart-bars {
@@ -211,10 +217,13 @@
             align-items: flex-end;
             gap: 1px;
             height: 190px;
+            width: 100%;
+            justify-content: center;
         }
 
         .chart-bar {
-            width: 8px;
+            width: 45%;
+            max-width: 12px;
             border-radius: 2px 2px 0 0;
             transition: opacity 0.2s;
             position: relative;
@@ -263,7 +272,7 @@
         .tabs {
             display: flex;
             gap: 4px;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             justify-content: center;
         }
 
@@ -500,8 +509,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>Daily Dashboard</h1>
-            <p class="date">Sunday, February 15, 2026</p>
+            <div class="header-left">
+                <h1>Daily Dashboard</h1>
+                <p class="date">Sunday, February 15, 2026</p>
+            </div>
+            <div class="header-quote">
+                "Just because you are happy it does not mean that the day is perfect but that you have looked beyond its imperfections."
+                <div class="quote-author">— Bob Marley</div>
+            </div>
         </header>
 
         <!-- TABS -->
@@ -513,30 +528,27 @@
         <!-- DAILY TAB -->
         <div id="tab-daily" class="tab-content active">
 
-        <!-- INSPIRATION QUOTE -->
-        <div class="section">
-            <h2>Inspiration</h2>
-            <div class="quote-box">
-                <p class="quote-text">"Courage Is a Love Affair with the Unknown"</p>
-                <p class="quote-author">- Osho</p>
-            </div>
-        </div>
-
         <!-- E-ADDRESS DATA -->
         <div class="section">
             <h2>E-Address (e-adrese)</h2>
             <div class="metric-cards">
                 <div class="metric-card">
-                    <div class="metric-main">+291</div>
-                    <div class="metric-deact">-20</div>
-                    <div class="metric-label">Yesterday / Natural persons</div>
-                    <div class="streak"><div class="streak-day"><div class="streak-val positive">+233</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val positive">+250</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val positive">+234</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val positive">+209</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val positive">+287</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val positive">+253</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val positive">+271</div><div class="streak-label">Sat</div></div></div>
+                    <div class="metric-main">567,307</div>
+                    <div class="metric-label">Natural persons — Total</div>
+                    <div style="margin-top:14px;"></div>
+                    <div class="metric-main">85,150</div>
+                    <div class="metric-label">Legal entities — Total</div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-main">+28</div>
-                    <div class="metric-deact">-0</div>
-                    <div class="metric-label">Yesterday / Legal entities</div>
-                    <div class="streak"><div class="streak-day"><div class="streak-val positive">+35</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val positive">+28</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val positive">+26</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val positive">+27</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val positive">+32</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val positive">+28</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val positive">+28</div><div class="streak-label">Sat</div></div></div>
+                <div class="metric-card" style="text-align:left;">
+                    <div class="metric-label" style="text-align:center;margin-bottom:10px;font-size:0.9em;">Last 4 Months</div>
+                    <div style="margin-bottom:8px;">
+                        <div class="metric-label" style="margin-bottom:4px;">Natural persons (Oct, Nov, Dec, Jan)</div>
+                        <div><span style="margin-right:10px;"><span style="color:#00ff88">+14,018</span> <span style="color:#cc4444">(-571)</span></span><span style="margin-right:10px;"><span style="color:#00ff88">+11,352</span> <span style="color:#cc4444">(-545)</span></span><span style="margin-right:10px;"><span style="color:#00ff88">+11,073</span> <span style="color:#cc4444">(-573)</span></span><span style="margin-right:10px;"><span style="color:#00ff88">+14,938</span> <span style="color:#cc4444">(-596)</span></span></div>
+                    </div>
+                    <div>
+                        <div class="metric-label" style="margin-bottom:4px;">Legal entities (Oct, Nov, Dec, Jan)</div>
+                        <div><span style="margin-right:10px;"><span style="color:#00ff88">+1,442</span> <span style="color:#cc4444">(-0)</span></span><span style="margin-right:10px;"><span style="color:#00ff88">+1,156</span> <span style="color:#cc4444">(-0)</span></span><span style="margin-right:10px;"><span style="color:#00ff88">+1,311</span> <span style="color:#cc4444">(-0)</span></span><span style="margin-right:10px;"><span style="color:#00ff88">+1,565</span> <span style="color:#cc4444">(-0)</span></span></div>
+                    </div>
                 </div>
             </div>
             <div class="chart-container">
@@ -786,7 +798,7 @@
                         </div>
                         <div class="chart-label">Jan 2026</div>
                     </div>
-                    <div class="chart-bar-group" title="Feb 2026: 567,268 natural / 85,148 legal">
+                    <div class="chart-bar-group" title="Feb 2026: 567,307 natural / 85,150 legal">
                         <div class="chart-bars">
                             <div class="chart-bar fiziska" style="height:180px"></div>
                             <div class="chart-bar juridiska" style="height:27px"></div>
@@ -806,6 +818,9 @@
         <div class="section">
             <h2>TechCrunch AI</h2>
             <div class="news-item">
+                <a href="https://techcrunch.com/2026/02/15/india-has-100m-weekly-active-chatgpt-users-sam-altman-says/" target="_blank">India has 100M weekly active ChatGPT users, Sam Altman says</a>
+            </div>
+            <div class="news-item">
                 <a href="https://techcrunch.com/2026/02/15/the-enterprise-ai-land-grab-is-on-glean-is-building-the-layer-beneath-the-interface/" target="_blank">The enterprise AI land grab is on. Glean is building the layer beneath the interface.</a>
             </div>
             <div class="news-item">
@@ -816,9 +831,6 @@
             </div>
             <div class="news-item">
                 <a href="https://techcrunch.com/2026/02/14/is-safety-is-dead-at-xai/" target="_blank">Is safety ‘dead’ at xAI?</a>
-            </div>
-            <div class="news-item">
-                <a href="https://techcrunch.com/2026/02/14/india-doubles-down-on-state-backed-venture-capital-approving-1-1b-fund/" target="_blank">India doubles down on state-backed venture capital, approving $1.1B fund</a>
             </div>
         </div>
 
@@ -861,16 +873,7 @@
               </div>
               <div class="cabinet-summary" id="cab-summary-0">
                 <div class="summary-label">Essence of the regulation</div>
-                <div class="summary-text"># Analīze
-
-**1. Pamatojums:**
-Teritorijas attīstības plānošanas likuma 7. panta pirmās daļas 8. punkts deleģē Ministru kabinetam regulēt TAPIS darbību un datu apstrādi, kā arī Ministru kabineta 2025. gada 25. novembra lēmums nosaka nepieciešamību regulēt Apgrūtināto teritoriju datu pieejamību.
-
-**2. Mērķis:**
-Nodrošināt, ka Apgrūtināto teritoriju informācija ģeoportālā tiek attēlota tikai identificētām personām atbilstoši nacionālās drošības un valsts aizsardzības prasībām.
-
-**3. Risinājums:**
-MK noteikumi Nr. 392 tiek papildināti ar jaunu 37.2 punktu, kas paredz, ka sistēmas pārzinis nodrošina, ka noteikumu 30.2.8. un 30.2.9. apakšpunktā minētā informācija (attiecīgi Apgrūtināto teritoriju dati) ģeoportālā tiek attēlota tikai identificētām personām. Piekļuves apjoms tiek limitēts atbilstoši normatīvajiem aktiem par nacionālās drošības un valsts aizsardzības svarīgas informācijas aizsardzības kārtību.</div>
+                <div class="summary-text">Ministru kabineta noteikumu projekts “Grozījumi MK noteikumos Nr. 392 “Teritorijas attīstības plānošanas informācijas sistēmas noteikumi”” (Noteikumu projekts) ir izstrādāts, pamatojoties uz Teritorijas attīstības plānošanas likuma 7. panta pirmās daļas 8. punktu, kas nosaka Ministru kabinetam deleģējumu regulēt Teritorijas attīstības plānošanas informācijas sistēmas (TAPIS) izveides, darbības, tai nepieciešamās informācijas iegūšanas, apst | Noteikumu projekta mērķis ir precizēt Teritorijas attīstības plānošanas informācijas sistēmas publiskajā daļā izplatāmās informācijas kārtību, nosakot, ka MK noteikumu Nr. 546 1. pielikumā minētie Apgrūtināto teritoriju informācijas sistēmas dati, ciktāl tie neattiecas uz valstij svarīgiem objektiem, ir pieejami tikai identificētām personām, nemainot normatīvajos aktos noteikto ATIS datu tiesisko statusu. | Ar Noteikumu projekta 37. 2 punktu tiek noteikts, ka attiecīgais ATIS datu apjoms TAPIS publiskajā daļā tiek attēlots tikai identificētām personām.</div>
                 <div class="summary-label">Decision</div>
                 <div class="summary-decision">1.Pieņemt iesniegto noteikumu projektu. 2. Valsts kancelejai sagatavot noteikumu projektu parakstīšanai.</div>
               </div>
@@ -941,6 +944,7 @@ MK noteikumi Nr. 392 tiek papildināti ar jaunu 37.2 punktu, kas paredz, ka sist
 
         <footer>
             <p>Built with Python | Your First AI Agent</p>
+            <p style="margin-top: 6px;">Last refresh: 02/15/2026 21:05</p>
         </footer>
     </div>
 
@@ -960,4 +964,3 @@ MK noteikumi Nr. 392 tiek papildināti ar jaunu 37.2 punktu, kas paredz, ka sist
     </script>
 </body>
 </html>
-<!-- Updated: Sun Feb 15 17:46:48 UTC 2026 -->
