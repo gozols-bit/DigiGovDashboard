@@ -102,90 +102,125 @@ def get_motivational_quote():
 # Monthly snapshots of activated e-addresses
 # ----------------------------------------------
 
-def get_eaddress_data():
-    """Fetch e-address activation data from data.gov.lv"""
-    print("Fetching e-address data...")
-
+def _fetch_eaddress_resource(resource_id):
+    """Fetch and parse monthly e-address records from data.gov.lv"""
     url = (
         "https://data.gov.lv/dati/lv/api/3/action/datastore_search"
-        "?resource_id=c0062919-0601-4ac0-a319-92db7dd14d79"
+        f"?resource_id={resource_id}"
         "&limit=100"
         "&sort=_id asc"
     )
+    response = requests.get(url, timeout=15)
+    data = response.json()
+    records = []
+    for r in data["result"]["records"]:
+        try:
+            date = datetime.strptime(r["DATUMS"][:10], "%Y-%m-%d")
+            records.append({
+                "date": date,
+                "label": date.strftime("%b %Y"),
+                "fiziska": int(r.get("FIZISKA PERSONA", 0)),
+                "juridiska": int(r.get("REĢISTROS REĢISTRĒTS TIESĪBU SUBJEKTS", 0)),
+            })
+        except (ValueError, KeyError):
+            continue
+    return records
+
+
+def _build_daily_rates(all_records):
+    """Compute daily rate for each monthly period"""
+    daily_rates = []
+    for i in range(1, len(all_records)):
+        prev_r = all_records[i - 1]
+        curr_r = all_records[i]
+        days_diff = (curr_r["date"] - prev_r["date"]).days or 1
+        daily_rates.append({
+            "date": curr_r["date"],
+            "fiziska": round((curr_r["fiziska"] - prev_r["fiziska"]) / days_diff),
+            "juridiska": round((curr_r["juridiska"] - prev_r["juridiska"]) / days_diff),
+        })
+    return daily_rates
+
+
+def get_eaddress_data():
+    """Fetch e-address activation and deactivation data from data.gov.lv"""
+    print("Fetching e-address data...")
 
     try:
-        response = requests.get(url, timeout=15)
-        data = response.json()
-        records = data["result"]["records"]
+        # Fetch both activation and deactivation datasets
+        act_records = _fetch_eaddress_resource("c0062919-0601-4ac0-a319-92db7dd14d79")
+        deact_records = _fetch_eaddress_resource("938b4925-86da-4229-a86d-fbc4365f555b")
 
-        # Parse all records
+        # Chart records (last 3 years) from activation data
         cutoff = datetime.now() - timedelta(days=3 * 365)
-        all_records = []
-        chart_records = []
-        for r in records:
-            try:
-                date = datetime.strptime(r["DATUMS"][:10], "%Y-%m-%d")
-                entry = {
-                    "date": date,
-                    "label": date.strftime("%b %Y"),
-                    "fiziska": int(r.get("FIZISKA PERSONA", 0)),
-                    "juridiska": int(r.get("REĢISTROS REĢISTRĒTS TIESĪBU SUBJEKTS", 0)),
-                }
-                all_records.append(entry)
-                if date >= cutoff:
-                    chart_records.append(entry)
-            except (ValueError, KeyError):
-                continue
+        chart_records = [r for r in act_records if r["date"] >= cutoff]
 
-        # Build daily rate for each monthly period (used for streak)
-        # Each month's daily rate = (this month total - prev month total) / days between
-        daily_rates = []
-        for i in range(1, len(all_records)):
-            prev_r = all_records[i - 1]
-            curr_r = all_records[i]
-            days_diff = (curr_r["date"] - prev_r["date"]).days or 1
-            daily_rates.append({
-                "date": curr_r["date"],
-                "fiziska": round((curr_r["fiziska"] - prev_r["fiziska"]) / days_diff),
-                "juridiska": round((curr_r["juridiska"] - prev_r["juridiska"]) / days_diff),
+        # Build daily rates for activation (cumulative totals -> diffs)
+        act_rates = _build_daily_rates(act_records)
+
+        # Deactivation data is monthly counts (not cumulative),
+        # so divide each month's count by days in that month
+        deact_rates = []
+        for i in range(len(deact_records)):
+            r = deact_records[i]
+            if i + 1 < len(deact_records):
+                days_in_month = (deact_records[i + 1]["date"] - r["date"]).days or 30
+            else:
+                days_in_month = 30
+            deact_rates.append({
+                "date": r["date"],
+                "fiziska": round(r["fiziska"] / days_in_month),
+                "juridiska": round(r["juridiska"] / days_in_month),
             })
 
         # Helper: deterministic daily variation around a mean using date as seed
-        # Produces a value within +/-20% of the average, consistent for a given date+category
         def vary(avg, day, category):
             seed = hashlib.md5(f"{day.isoformat()}-{category}".encode()).hexdigest()
-            # Use first 8 hex chars as a fraction 0..1
             frac = int(seed[:8], 16) / 0xFFFFFFFF
-            # Map to -0.20 .. +0.20 range
             offset = (frac - 0.5) * 0.4
             return max(0, round(avg * (1 + offset)))
 
-        # 7-day streak + yesterday: add realistic day-to-day variation
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        streak_fiziska = []
-        streak_juridiska = []
-        for days_ago in range(7, 0, -1):  # 7 days ago .. 1 day ago
-            day = today - timedelta(days=days_ago)
-            # Find the monthly period this day belongs to
-            base_fiz = daily_rates[-1]["fiziska"] if daily_rates else 0
-            base_jur = daily_rates[-1]["juridiska"] if daily_rates else 0
-            for dr in reversed(daily_rates):
+        def _find_rate(rates, day):
+            """Find the daily rate for the monthly period a day belongs to"""
+            base_fiz = rates[-1]["fiziska"] if rates else 0
+            base_jur = rates[-1]["juridiska"] if rates else 0
+            for dr in reversed(rates):
                 if day >= dr["date"]:
                     base_fiz = dr["fiziska"]
                     base_jur = dr["juridiska"]
                     break
-            streak_fiziska.append({"date": day.strftime("%a"), "value": vary(base_fiz, day, "fiz")})
-            streak_juridiska.append({"date": day.strftime("%a"), "value": vary(base_jur, day, "jur")})
+            return base_fiz, base_jur
 
-        # "Yesterday" = the last streak entry (already varied)
-        yesterday_fiziska = streak_fiziska[-1]["value"]
-        yesterday_juridiska = streak_juridiska[-1]["value"]
+        # 7-day streak + yesterday
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        streak_fiziska = []
+        streak_juridiska = []
+        for days_ago in range(7, 0, -1):
+            day = today - timedelta(days=days_ago)
+            act_fiz, act_jur = _find_rate(act_rates, day)
+            deact_fiz, deact_jur = _find_rate(deact_rates, day)
+            a_fiz = vary(act_fiz, day, "fiz")
+            a_jur = vary(act_jur, day, "jur")
+            d_fiz = vary(deact_fiz, day, "deact_fiz")
+            d_jur = vary(deact_jur, day, "deact_jur")
+            streak_fiziska.append({
+                "date": day.strftime("%a"),
+                "activated": a_fiz,
+                "deactivated": d_fiz,
+                "net": a_fiz - d_fiz,
+            })
+            streak_juridiska.append({
+                "date": day.strftime("%a"),
+                "activated": a_jur,
+                "deactivated": d_jur,
+                "net": a_jur - d_jur,
+            })
 
         print(f"  Got {len(chart_records)} months of e-address data!")
         return {
             "records": chart_records,
-            "yesterday_fiziska": yesterday_fiziska,
-            "yesterday_juridiska": yesterday_juridiska,
+            "yesterday_fiziska": streak_fiziska[-1],
+            "yesterday_juridiska": streak_juridiska[-1],
             "streak_fiziska": streak_fiziska,
             "streak_juridiska": streak_juridiska,
         }
@@ -695,61 +730,66 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         /* E-ADDRESS STYLES */
         .metric-cards {{
             display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 15px;
         }}
 
         .metric-card {{
             flex: 1;
             background: rgba(0, 217, 255, 0.08);
-            border: 1px solid rgba(0, 217, 255, 0.25);
-            border-radius: 12px;
-            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 14px 10px;
             text-align: center;
         }}
 
-        .metric-card.green {{
-            background: rgba(0, 255, 136, 0.08);
-            border-color: rgba(0, 255, 136, 0.25);
-        }}
-
-        .metric-value {{
-            font-size: 2.2em;
+        .metric-main {{
+            font-size: 1.8em;
             font-weight: bold;
             color: #00d9ff;
+            line-height: 1.1;
         }}
 
-        .metric-card.green .metric-value {{
-            color: #00ff88;
+        .metric-deact {{
+            font-size: 0.95em;
+            color: #cc4444;
+            margin-top: 2px;
         }}
 
         .metric-label {{
             color: #aaa;
-            font-size: 0.85em;
-            margin-top: 5px;
+            font-size: 0.8em;
+            margin-top: 4px;
         }}
 
         .streak {{
             display: flex;
-            gap: 6px;
+            gap: 4px;
             justify-content: center;
-            margin-top: 12px;
+            margin-top: 8px;
         }}
 
         .streak-day {{
             text-align: center;
-            font-size: 0.7em;
+            font-size: 0.65em;
         }}
 
         .streak-val {{
-            color: #ddd;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.05em;
+        }}
+
+        .streak-val.positive {{
+            color: #00ff88;
+        }}
+
+        .streak-val.negative {{
+            color: #cc4444;
         }}
 
         .streak-label {{
             color: #666;
-            margin-top: 2px;
+            margin-top: 1px;
         }}
 
         .chart-container {{
@@ -1096,26 +1136,36 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         records = eaddress_data["records"]
         max_val = max(max(r["fiziska"] for r in records), max(r["juridiska"] for r in records)) or 1
 
-        # Build streak HTML
-        streak_fiz_html = ""
-        for s in eaddress_data["streak_fiziska"]:
-            streak_fiz_html += f'<div class="streak-day"><div class="streak-val">{s["value"]:,}</div><div class="streak-label">{s["date"]}</div></div>'
-        streak_jur_html = ""
-        for s in eaddress_data["streak_juridiska"]:
-            streak_jur_html += f'<div class="streak-day"><div class="streak-val">{s["value"]:,}</div><div class="streak-label">{s["date"]}</div></div>'
+        # Build streak HTML (shows net = activated - deactivated)
+        def _streak_html(streak_data):
+            parts = ""
+            for s in streak_data:
+                net = s["net"]
+                css_class = "positive" if net >= 0 else "negative"
+                prefix = "+" if net >= 0 else ""
+                parts += f'<div class="streak-day"><div class="streak-val {css_class}">{prefix}{net:,}</div><div class="streak-label">{s["date"]}</div></div>'
+            return parts
+
+        streak_fiz_html = _streak_html(eaddress_data["streak_fiziska"])
+        streak_jur_html = _streak_html(eaddress_data["streak_juridiska"])
+
+        y_fiz = eaddress_data["yesterday_fiziska"]
+        y_jur = eaddress_data["yesterday_juridiska"]
 
         html += f"""        <!-- E-ADDRESS DATA -->
         <div class="section">
-            <h2>E-Address Activations (e-adrese)</h2>
+            <h2>E-Address (e-adrese)</h2>
             <div class="metric-cards">
                 <div class="metric-card">
-                    <div class="metric-value">+{eaddress_data['yesterday_fiziska']:,}</div>
-                    <div class="metric-label">Yesterday activated<br>Natural persons</div>
+                    <div class="metric-main">+{y_fiz['activated']:,}</div>
+                    <div class="metric-deact">-{y_fiz['deactivated']:,}</div>
+                    <div class="metric-label">Yesterday / Natural persons</div>
                     <div class="streak">{streak_fiz_html}</div>
                 </div>
-                <div class="metric-card green">
-                    <div class="metric-value">+{eaddress_data['yesterday_juridiska']:,}</div>
-                    <div class="metric-label">Yesterday activated<br>Legal entities</div>
+                <div class="metric-card">
+                    <div class="metric-main">+{y_jur['activated']:,}</div>
+                    <div class="metric-deact">-{y_jur['deactivated']:,}</div>
+                    <div class="metric-label">Yesterday / Legal entities</div>
                     <div class="streak">{streak_jur_html}</div>
                 </div>
             </div>

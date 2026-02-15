@@ -123,61 +123,66 @@
         /* E-ADDRESS STYLES */
         .metric-cards {
             display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 15px;
         }
 
         .metric-card {
             flex: 1;
             background: rgba(0, 217, 255, 0.08);
-            border: 1px solid rgba(0, 217, 255, 0.25);
-            border-radius: 12px;
-            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 14px 10px;
             text-align: center;
         }
 
-        .metric-card.green {
-            background: rgba(0, 255, 136, 0.08);
-            border-color: rgba(0, 255, 136, 0.25);
-        }
-
-        .metric-value {
-            font-size: 2.2em;
+        .metric-main {
+            font-size: 1.8em;
             font-weight: bold;
             color: #00d9ff;
+            line-height: 1.1;
         }
 
-        .metric-card.green .metric-value {
-            color: #00ff88;
+        .metric-deact {
+            font-size: 0.95em;
+            color: #cc4444;
+            margin-top: 2px;
         }
 
         .metric-label {
             color: #aaa;
-            font-size: 0.85em;
-            margin-top: 5px;
+            font-size: 0.8em;
+            margin-top: 4px;
         }
 
         .streak {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             justify-content: center;
-            margin-top: 12px;
+            margin-top: 8px;
         }
 
         .streak-day {
             text-align: center;
-            font-size: 0.7em;
+            font-size: 0.65em;
         }
 
         .streak-val {
-            color: #ddd;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.05em;
+        }
+
+        .streak-val.positive {
+            color: #00ff88;
+        }
+
+        .streak-val.negative {
+            color: #cc4444;
         }
 
         .streak-label {
             color: #666;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .chart-container {
@@ -512,24 +517,26 @@
         <div class="section">
             <h2>Inspiration</h2>
             <div class="quote-box">
-                <p class="quote-text">"A very little key will open a very heavy door."</p>
-                <p class="quote-author">- Charles Dickens</p>
+                <p class="quote-text">"Blessed is he who expects nothing, for he shall never be disappointed."</p>
+                <p class="quote-author">- Alexander Pope</p>
             </div>
         </div>
 
         <!-- E-ADDRESS DATA -->
         <div class="section">
-            <h2>E-Address Activations (e-adrese)</h2>
+            <h2>E-Address (e-adrese)</h2>
             <div class="metric-cards">
                 <div class="metric-card">
-                    <div class="metric-value">+280</div>
-                    <div class="metric-label">Yesterday activated<br>Natural persons</div>
-                    <div class="streak"><div class="streak-day"><div class="streak-val">246</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val">257</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val">243</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val">219</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val">296</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val">261</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val">280</div><div class="streak-label">Sat</div></div></div>
+                    <div class="metric-main">+280</div>
+                    <div class="metric-deact">-20</div>
+                    <div class="metric-label">Yesterday / Natural persons</div>
+                    <div class="streak"><div class="streak-day"><div class="streak-val positive">+223</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val positive">+240</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val positive">+224</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val positive">+201</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val positive">+276</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val positive">+243</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val positive">+260</div><div class="streak-label">Sat</div></div></div>
                 </div>
-                <div class="metric-card green">
-                    <div class="metric-value">+28</div>
-                    <div class="metric-label">Yesterday activated<br>Legal entities</div>
-                    <div class="streak"><div class="streak-day"><div class="streak-val">35</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val">28</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val">26</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val">27</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val">32</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val">28</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val">28</div><div class="streak-label">Sat</div></div></div>
+                <div class="metric-card">
+                    <div class="metric-main">+28</div>
+                    <div class="metric-deact">-0</div>
+                    <div class="metric-label">Yesterday / Legal entities</div>
+                    <div class="streak"><div class="streak-day"><div class="streak-val positive">+35</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val positive">+28</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val positive">+26</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val positive">+27</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val positive">+32</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val positive">+28</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val positive">+28</div><div class="streak-label">Sat</div></div></div>
                 </div>
             </div>
             <div class="chart-container">
@@ -857,13 +864,13 @@
                 <div class="summary-text"># Analīze
 
 **1. Pamatojums:**
-Teritorijas attīstības plānošanas likuma 7. panta 8. punkts deleģē Ministru kabinetam regulēt TAPIS darbību un datu apmaiņu, un Ministru kabineta 2025. gada 25. novembra lēmums uzdeva sagatavot grozījumus datu pieejamības ierobežošanai.
+Nepieciešams regulēt Teritorijas attīstības plānošanas informācijas sistēmas datu pieejamību, nodrošinot, ka nacionālajai drošībai un valsts aizsardzībai svarīga informācija par nekustamajiem īpašumiem ir pieejama tikai identificētām personām.
 
 **2. Mērķis:**
-Nodrošināt, ka nacionālajai drošībai un valsts aizsardzībai svarīga informācija par nekustamo īpašumu objektiem ģeoportālā būtu pieejama tikai identificētām personām.
+Aizsargāt valsts drošības intereses, ierobežojot sabiedrības pieejamību dārgajai un stratēģiskai informācijai ģeoportālā.
 
 **3. Risinājums:**
-MK noteikumos Nr. 392 tiek papildināts ar jaunu 37.2 punktu, kas nosaka, ka sistēmas pārzinis nodrošina, lai 30.2.8. un 30.2.9. apakšpunktos minētā informācija ģeoportālā tiek attēlota tikai identificētām personām tādā apjomā, kādā šī informācija ir ierobežojama atbilstoši normatīvajiem aktiem par nacionālajai drošībai un valsts aizsardzībai svarīgas informācijas par nekustamā īpašuma objektiem aizsardzības kārtību.</div>
+MK noteikumu Nr. 392 tiek papildināts ar jaunu 37.2 punktu, kurš nosaka, ka sistēmas pārzinis nodrošina, ka informācija par nekustamā īpašuma objektiem, kas minēta 30.2.8. un 30.2.9. apakšpunktā un ir ierobežojama atbilstoši normatīvajiem aktiem par nacionālajai drošībai un valsts aizsardzībai svarīgu informāciju, ģeoportālā tiek attēlota tikai identificētām personām. Tādējādi tiek ieviests piekļuves kontroles mehānisms, kas nošķir publiski pieejamos datus no dātiem, kurus var skatīt tikai autentificēti lietotāji.</div>
                 <div class="summary-label">Decision</div>
                 <div class="summary-decision">1.Pieņemt iesniegto noteikumu projektu. 2. Valsts kancelejai sagatavot noteikumu projektu parakstīšanai.</div>
               </div>
