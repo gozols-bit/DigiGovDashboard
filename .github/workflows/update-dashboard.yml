@@ -1,0 +1,163 @@
+name: Update Dashboard Daily
+
+on:
+  schedule:
+    # Runs at 6:00 AM UTC (8 AM Riga winter, 9 AM summer)
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run dashboard script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python daily_dashboard.py
+      
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add index.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update dashboard: $(date +'%Y-%m-%d %H:%M:%S')" && git push)
+```
+
+---
+
+### **Step 4: Commit the File**
+
+1. Scroll down
+2. Commit message: "Add GitHub Actions workflow for daily updates"
+3. Click **"Commit new file"**
+
+---
+
+## 🔐 Step 5: Add Your API Key as Secret
+
+**This is CRITICAL - your automation won't work without it!**
+
+1. Go to your repo **Settings** tab (top menu)
+2. Left sidebar → **Secrets and variables** → **Actions**
+3. Click **"New repository secret"**
+4. Name: `ANTHROPIC_API_KEY`
+5. Secret: Paste your actual API key
+6. Click **"Add secret"**
+
+**Never put API keys directly in code files!**
+
+---
+
+## ✅ Final Folder Structure
+
+After setup, your repo should look like:
+```
+DigiGovDashboard/
+├── .github/
+│   └── workflows/
+│       └── update-dashboard.yml  ← Automation config
+├── .gitignore
+├── daily_dashboard.py
+├── index.html
+├── k-tī
+└── requirements.txt
+```
+
+---
+
+## 🎯 How to Create the File (Simple Steps)
+
+**Let me give you the exact clicks:**
+
+1. **Go back to main repo page** (cancel current file creation)
+
+2. **Click "Add file"** → **"Create new file"**
+
+3. **In the "Name your file..." box, type EXACTLY:**
+```
+   .github/workflows/update-dashboard.yml
+```
+   
+   Type it with the slashes! GitHub creates folders automatically.
+
+4. **GitHub will show:**
+```
+   DigiGovDashboard / .github / workflows / update-dashboard.yml
+```
+
+5. **Now paste the YAML code** (from Step 3 above)
+
+6. **Scroll down, commit**
+
+7. **Then add the API key secret** (Step 5 above)
+
+---
+
+## 🚀 Testing Your Automation
+
+### **Test Immediately (Don't Wait for Schedule):**
+
+1. Go to **Actions** tab (top menu)
+2. Click **"Update Dashboard Daily"** workflow (left sidebar)
+3. Click **"Run workflow"** button (right side)
+4. Click green **"Run workflow"** button
+5. Wait 1-2 minutes
+6. Check if `index.html` was updated!
+
+---
+
+## 📊 What This Does
+
+**Once set up:**
+```
+Every day at 6 AM UTC:
+  ↓
+GitHub Actions runs your Python script
+  ↓
+Fetches latest news, legal docs, quotes
+  ↓
+Generates new index.html
+  ↓
+Commits to GitHub
+  ↓
+GitHub Pages deploys automatically
+  ↓
+Your site is updated!
+```
+
+**You never touch it again - fully automated! 🎉**
+
+---
+
+## ⚠️ Common Mistakes to Avoid
+
+❌ **Wrong:** Creating file in root
+```
+DigiGovDashboard/
+└── update-dashboard.yml  ← GitHub won't find this!
+```
+
+❌ **Wrong:** Wrong folder name
+```
+DigiGovDashboard/
+└── github/workflows/  ← Missing the dot!
+```
+
+✅ **Correct:**
+```
+DigiGovDashboard/
+└── .github/workflows/update-dashboard.yml  ← Perfect!
