@@ -1374,7 +1374,7 @@ def main():
     html_content = create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data, cabinet_data, parliament_data)
 
     # Step 3: Save to a file
-    filename = "dashboard.html"
+    filename = "index.html"
     with open(filename, "w", encoding="utf-8") as file:
         file.write(html_content)
 
