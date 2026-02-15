@@ -1132,6 +1132,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
             font-size: 0.85em;
             margin-bottom: 15px;
         }}
+
     </style>
 </head>
 <body>
@@ -1150,7 +1151,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         <!-- TABS -->
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('daily')">Daily</button>
-            <button class="tab-btn" onclick="switchTab('monday')">Monday</button>
+            <button class="tab-btn" onclick="switchTab('monday')">MK/Saeima</button>
         </div>
 
         <!-- DAILY TAB -->
@@ -1265,10 +1266,10 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         <div id="tab-monday" class="tab-content">
 """
 
-    # Add Cabinet / Monday content
+    # Add Cabinet / MK-Saeima content
     if cabinet_data and cabinet_data["cudars_items"]:
         html += f"""        <div class="section">
-            <h2>Cabinet Sitting - R.Cudars Items</h2>
+            <h2>MK - VARAM</h2>
             <div class="cabinet-meeting-info">
                 Next sitting: <strong>{cabinet_data['meeting_date']}</strong>
                 | <a href="{cabinet_data['meeting_url']}" target="_blank">Full agenda</a>
@@ -1303,7 +1304,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         html += "        </div>\n"
     elif cabinet_data:
         html += f"""        <div class="section">
-            <h2>Cabinet Sitting - R.Cudars Items</h2>
+            <h2>MK - VARAM</h2>
             <div class="cabinet-meeting-info">
                 Next sitting: <strong>{cabinet_data['meeting_date']}</strong>
                 | <a href="{cabinet_data['meeting_url']}" target="_blank">Full agenda</a>
@@ -1313,7 +1314,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 """
     else:
         html += """        <div class="section">
-            <h2>Cabinet Sitting - R.Cudars Items</h2>
+            <h2>MK - VARAM</h2>
             <div class="cabinet-empty">Could not fetch cabinet agenda data.</div>
         </div>
 """
@@ -1321,7 +1322,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
     # Add Parliament section
     if parliament_data and parliament_data["items"]:
         html += f"""        <div class="section">
-            <h2>Parliament This Week</h2>
+            <h2>Saeimas komisijas - VARAM</h2>
             <div class="parl-week-range">{parliament_data['week_start']} – {parliament_data['week_end']}</div>
 """
         # Group items by commission + date
@@ -1345,7 +1346,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         html += "        </div>\n\n"
     elif parliament_data:
         html += f"""        <div class="section">
-            <h2>Parliament This Week</h2>
+            <h2>Saeimas komisijas - VARAM</h2>
             <div class="parl-week-range">{parliament_data['week_start']} – {parliament_data['week_end']}</div>
             <div class="cabinet-empty">No VARAM or digital government topics found in next week's agendas.</div>
         </div>
@@ -1353,7 +1354,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 """
     else:
         html += """        <div class="section">
-            <h2>Parliament This Week</h2>
+            <h2>Saeimas komisijas - VARAM</h2>
             <div class="cabinet-empty">Could not fetch Parliament agenda data.</div>
         </div>
 
