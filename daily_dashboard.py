@@ -18,17 +18,17 @@ except ImportError:
     HAS_ANTHROPIC = False
 
 # ----------------------------------------------
-# SECTION 1: FETCH TECHCRUNCH NEWS
+# SECTION 1: FETCH TECHCRUNCH AI NEWS
 # RSS feeds are like news subscriptions that
 # give us articles in a format computers can read
 # ----------------------------------------------
 
 def get_techcrunch_news():
-    """Fetch top 5 headlines from TechCrunch"""
-    print("Fetching TechCrunch news...")
+    """Fetch top 5 AI headlines from TechCrunch"""
+    print("Fetching TechCrunch AI news...")
 
-    # TechCrunch's RSS feed URL
-    url = "https://techcrunch.com/feed/"
+    # TechCrunch's AI category RSS feed URL
+    url = "https://techcrunch.com/category/artificial-intelligence/feed/"
 
     # feedparser reads the RSS feed and turns it into Python data
     feed = feedparser.parse(url)
@@ -46,16 +46,16 @@ def get_techcrunch_news():
 
 
 # ----------------------------------------------
-# SECTION 2: FETCH BBC TECHNOLOGY NEWS
-# Using BBC's reliable RSS feed for tech headlines
+# SECTION 2: FETCH CUSTOM RSS FEED NEWS
+# Using a custom RSS feed via rss.app
 # ----------------------------------------------
 
 def get_digital_government_news():
-    """Fetch top 5 tech news from BBC Technology RSS feed"""
-    print("Fetching BBC Technology news...")
+    """Fetch top 5 news from custom RSS feed"""
+    print("Fetching custom RSS feed news...")
 
-    # BBC Technology RSS feed - reliable and always available
-    url = "http://feeds.bbci.co.uk/news/technology/rss.xml"
+    # Custom RSS feed (Kursors.lv AI news)
+    url = "https://rss.app/feeds/mGOvbzxiJjlQrlbH.xml"
 
     feed = feedparser.parse(url)
 
@@ -593,7 +593,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         }}
 
         .container {{
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
         }}
 
@@ -671,6 +671,18 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
         .quote-author {{
             color: #00ff88;
             font-size: 1.1em;
+        }}
+
+        .news-row {{
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }}
+
+        .news-row .section {{
+            flex: 1;
+            margin-bottom: 0;
+            min-width: 0;
         }}
 
         footer {{
@@ -1132,12 +1144,13 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 
 """
 
-    html += """        <!-- TECHCRUNCH NEWS -->
+    html += """        <!-- NEWS ROW - Two columns side by side -->
+        <div class="news-row">
         <div class="section">
-            <h2>TechCrunch Headlines</h2>
+            <h2>TechCrunch AI</h2>
 """
 
-    # Add each TechCrunch article
+    # Add each TechCrunch AI article
     for article in techcrunch_news:
         html += f"""            <div class="news-item">
                 <a href="{article['link']}" target="_blank">{article['title']}</a>
@@ -1146,12 +1159,11 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 
     html += """        </div>
 
-        <!-- DIGITAL GOVERNMENT NEWS -->
         <div class="section">
-            <h2>BBC Technology News</h2>
+            <h2>Kursors.lv AI</h2>
 """
 
-    # Add each government news article
+    # Add each RSS feed article
     for article in gov_news:
         html += f"""            <div class="news-item">
                 <a href="{article['link']}" target="_blank">{article['title']}</a>
@@ -1159,6 +1171,7 @@ def create_html_dashboard(techcrunch_news, gov_news, quote, eaddress_data=None, 
 """
 
     html += """        </div>
+        </div><!-- end news-row -->
 
         </div><!-- end Daily tab -->
 
