@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:data.gov.lv)",
+      "Bash(python:*)",
+      "WebFetch(domain:titania.saeima.lv)"
+    ]
+  }
+}

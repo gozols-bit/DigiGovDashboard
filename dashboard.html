@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Dashboard</title>
+    <style>
+        /* STYLING - Makes everything look nice */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .date {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-item a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.05em;
+            line-height: 1.5;
+            display: block;
+            transition: color 0.2s;
+        }
+
+        .news-item a:hover {
+            color: #00ff88;
+        }
+
+        .quote-box {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .quote-text {
+            font-size: 1.4em;
+            font-style: italic;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #f0f0f0;
+        }
+
+        .quote-author {
+            color: #00ff88;
+            font-size: 1.1em;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* E-ADDRESS STYLES */
+        .metric-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            flex: 1;
+            background: rgba(0, 217, 255, 0.08);
+            border: 1px solid rgba(0, 217, 255, 0.25);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-card.green {
+            background: rgba(0, 255, 136, 0.08);
+            border-color: rgba(0, 255, 136, 0.25);
+        }
+
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #00d9ff;
+        }
+
+        .metric-card.green .metric-value {
+            color: #00ff88;
+        }
+
+        .metric-label {
+            color: #aaa;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .streak {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .streak-day {
+            text-align: center;
+            font-size: 0.7em;
+        }
+
+        .streak-val {
+            color: #ddd;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .streak-label {
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .chart-container {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 220px;
+            min-width: max-content;
+            padding: 0 5px;
+        }
+
+        .chart-bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 1px;
+            height: 190px;
+        }
+
+        .chart-bar {
+            width: 8px;
+            border-radius: 2px 2px 0 0;
+            transition: opacity 0.2s;
+            position: relative;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+
+        .chart-bar.fiziska {
+            background: #00d9ff;
+        }
+
+        .chart-bar.juridiska {
+            background: #00ff88;
+        }
+
+        .chart-label {
+            font-size: 0.55em;
+            color: #888;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 10px 28px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px 10px 0 0;
+            color: #888;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #ccc;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .tab-btn.active {
+            color: #00d9ff;
+            background: rgba(0,217,255,0.1);
+            border-color: rgba(0,217,255,0.3);
+            border-bottom-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* CABINET / MONDAY TAB */
+        .cabinet-meeting-info {
+            color: #aaa;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .cabinet-meeting-info a {
+            color: #00d9ff;
+            text-decoration: none;
+        }
+
+        .cabinet-meeting-info a:hover {
+            color: #00ff88;
+        }
+
+        .cabinet-section-name {
+            color: #00ff88;
+            font-size: 0.85em;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            padding: 4px 10px;
+            background: rgba(0,255,136,0.08);
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .cabinet-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .cabinet-item:last-child {
+            border-bottom: none;
+        }
+
+        .cabinet-item a {
+            color: #fff;
+            text-decoration: none;
+            line-height: 1.5;
+            transition: color 0.2s;
+        }
+
+        .cabinet-item a:hover {
+            color: #00ff88;
+        }
+
+        .cabinet-ta-id {
+            color: #00d9ff;
+            font-size: 0.8em;
+            margin-right: 8px;
+        }
+
+        .cabinet-empty {
+            color: #666;
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        .cabinet-item-wrapper {
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .cabinet-item-wrapper:last-child {
+            border-bottom: none;
+        }
+
+        .cabinet-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .cabinet-toggle:hover {
+            color: #00ff88;
+        }
+
+        .cabinet-toggle .toggle-arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            margin-right: 6px;
+            font-size: 0.8em;
+            color: #00d9ff;
+        }
+
+        .cabinet-summary {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+            padding: 0 16px;
+            background: rgba(0,217,255,0.03);
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 4px;
+        }
+
+        .cabinet-summary.open {
+            max-height: 800px;
+            padding: 14px 16px;
+        }
+
+        .summary-label {
+            color: #00d9ff;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            margin-top: 10px;
+        }
+
+        .summary-label:first-child {
+            margin-top: 0;
+        }
+
+        .summary-text {
+            color: #bbb;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .summary-decision {
+            color: #00ff88;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        /* PARLIAMENT STYLES */
+        .parl-group-header {
+            color: #00d9ff;
+            font-size: 0.9em;
+            margin-top: 18px;
+            margin-bottom: 4px;
+            padding: 6px 12px;
+            background: rgba(0,217,255,0.08);
+            border-radius: 6px;
+        }
+
+        .parl-group-header .parl-date {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .parl-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .parl-item:last-child {
+            border-bottom: none;
+        }
+
+        .parl-item a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .parl-item a:hover {
+            color: #00ff88;
+        }
+
+        .parl-item.content-match {
+            color: #e0a040;
+        }
+
+        .parl-item.content-match a {
+            color: #e0a040;
+        }
+
+        .parl-item.content-match a:hover {
+            color: #ffcc66;
+        }
+
+        .parl-match-badge {
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .parl-match-badge.keyword {
+            background: rgba(0,217,255,0.15);
+            color: #00d9ff;
+        }
+
+        .parl-match-badge.content {
+            background: rgba(224,160,64,0.15);
+            color: #e0a040;
+        }
+
+        .parl-week-range {
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Daily Dashboard</h1>
+            <p class="date">Sunday, February 15, 2026</p>
+        </header>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('daily')">Daily</button>
+            <button class="tab-btn" onclick="switchTab('monday')">Monday</button>
+        </div>
+
+        <!-- DAILY TAB -->
+        <div id="tab-daily" class="tab-content active">
+
+        <!-- INSPIRATION QUOTE -->
+        <div class="section">
+            <h2>Inspiration</h2>
+            <div class="quote-box">
+                <p class="quote-text">"If you can't imagine it, you can't have it."</p>
+                <p class="quote-author">- Toni Morrison</p>
+            </div>
+        </div>
+
+        <!-- E-ADDRESS DATA -->
+        <div class="section">
+            <h2>E-Address Activations (e-adrese)</h2>
+            <div class="metric-cards">
+                <div class="metric-card">
+                    <div class="metric-value">+280</div>
+                    <div class="metric-label">Yesterday activated<br>Natural persons</div>
+                    <div class="streak"><div class="streak-day"><div class="streak-val">246</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val">257</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val">243</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val">219</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val">296</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val">261</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val">280</div><div class="streak-label">Sat</div></div></div>
+                </div>
+                <div class="metric-card green">
+                    <div class="metric-value">+28</div>
+                    <div class="metric-label">Yesterday activated<br>Legal entities</div>
+                    <div class="streak"><div class="streak-day"><div class="streak-val">35</div><div class="streak-label">Sun</div></div><div class="streak-day"><div class="streak-val">28</div><div class="streak-label">Mon</div></div><div class="streak-day"><div class="streak-val">26</div><div class="streak-label">Tue</div></div><div class="streak-day"><div class="streak-val">27</div><div class="streak-label">Wed</div></div><div class="streak-day"><div class="streak-val">32</div><div class="streak-label">Thu</div></div><div class="streak-day"><div class="streak-val">28</div><div class="streak-label">Fri</div></div><div class="streak-day"><div class="streak-val">28</div><div class="streak-label">Sat</div></div></div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart">
+                    <div class="chart-bar-group" title="Mar 2023: 88,780 natural / 35,153 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:28px"></div>
+                            <div class="chart-bar juridiska" style="height:11px"></div>
+                        </div>
+                        <div class="chart-label">Mar 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Apr 2023: 92,450 natural / 36,409 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:29px"></div>
+                            <div class="chart-bar juridiska" style="height:11px"></div>
+                        </div>
+                        <div class="chart-label">Apr 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="May 2023: 96,432 natural / 37,420 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:30px"></div>
+                            <div class="chart-bar juridiska" style="height:11px"></div>
+                        </div>
+                        <div class="chart-label">May 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jun 2023: 100,293 natural / 38,251 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:31px"></div>
+                            <div class="chart-bar juridiska" style="height:12px"></div>
+                        </div>
+                        <div class="chart-label">Jun 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jul 2023: 104,022 natural / 38,954 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:33px"></div>
+                            <div class="chart-bar juridiska" style="height:12px"></div>
+                        </div>
+                        <div class="chart-label">Jul 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Aug 2023: 107,739 natural / 39,690 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:34px"></div>
+                            <div class="chart-bar juridiska" style="height:12px"></div>
+                        </div>
+                        <div class="chart-label">Aug 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Sep 2023: 110,917 natural / 40,368 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:35px"></div>
+                            <div class="chart-bar juridiska" style="height:12px"></div>
+                        </div>
+                        <div class="chart-label">Sep 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Oct 2023: 114,782 natural / 41,064 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:36px"></div>
+                            <div class="chart-bar juridiska" style="height:13px"></div>
+                        </div>
+                        <div class="chart-label">Oct 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Nov 2023: 121,646 natural / 41,958 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:38px"></div>
+                            <div class="chart-bar juridiska" style="height:13px"></div>
+                        </div>
+                        <div class="chart-label">Nov 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Dec 2023: 139,957 natural / 42,744 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:44px"></div>
+                            <div class="chart-bar juridiska" style="height:13px"></div>
+                        </div>
+                        <div class="chart-label">Dec 2023</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jan 2024: 158,285 natural / 43,918 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:50px"></div>
+                            <div class="chart-bar juridiska" style="height:13px"></div>
+                        </div>
+                        <div class="chart-label">Jan 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Feb 2024: 175,303 natural / 45,517 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:55px"></div>
+                            <div class="chart-bar juridiska" style="height:14px"></div>
+                        </div>
+                        <div class="chart-label">Feb 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Mar 2024: 194,815 natural / 46,995 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:61px"></div>
+                            <div class="chart-bar juridiska" style="height:14px"></div>
+                        </div>
+                        <div class="chart-label">Mar 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Apr 2024: 210,840 natural / 48,297 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:66px"></div>
+                            <div class="chart-bar juridiska" style="height:15px"></div>
+                        </div>
+                        <div class="chart-label">Apr 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="May 2024: 221,576 natural / 49,137 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:70px"></div>
+                            <div class="chart-bar juridiska" style="height:15px"></div>
+                        </div>
+                        <div class="chart-label">May 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jun 2024: 230,935 natural / 49,867 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:73px"></div>
+                            <div class="chart-bar juridiska" style="height:15px"></div>
+                        </div>
+                        <div class="chart-label">Jun 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jul 2024: 242,023 natural / 50,683 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:76px"></div>
+                            <div class="chart-bar juridiska" style="height:16px"></div>
+                        </div>
+                        <div class="chart-label">Jul 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Aug 2024: 251,531 natural / 51,419 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:79px"></div>
+                            <div class="chart-bar juridiska" style="height:16px"></div>
+                        </div>
+                        <div class="chart-label">Aug 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Sep 2024: 261,467 natural / 52,316 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:83px"></div>
+                            <div class="chart-bar juridiska" style="height:16px"></div>
+                        </div>
+                        <div class="chart-label">Sep 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Oct 2024: 273,021 natural / 53,474 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:86px"></div>
+                            <div class="chart-bar juridiska" style="height:16px"></div>
+                        </div>
+                        <div class="chart-label">Oct 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Nov 2024: 286,902 natural / 54,768 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:91px"></div>
+                            <div class="chart-bar juridiska" style="height:17px"></div>
+                        </div>
+                        <div class="chart-label">Nov 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Dec 2024: 324,416 natural / 58,731 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:102px"></div>
+                            <div class="chart-bar juridiska" style="height:18px"></div>
+                        </div>
+                        <div class="chart-label">Dec 2024</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jan 2025: 361,208 natural / 62,902 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:114px"></div>
+                            <div class="chart-bar juridiska" style="height:19px"></div>
+                        </div>
+                        <div class="chart-label">Jan 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Feb 2025: 394,547 natural / 66,584 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:125px"></div>
+                            <div class="chart-bar juridiska" style="height:21px"></div>
+                        </div>
+                        <div class="chart-label">Feb 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Mar 2025: 418,253 natural / 69,234 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:132px"></div>
+                            <div class="chart-bar juridiska" style="height:21px"></div>
+                        </div>
+                        <div class="chart-label">Mar 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Apr 2025: 436,466 natural / 71,250 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:138px"></div>
+                            <div class="chart-bar juridiska" style="height:22px"></div>
+                        </div>
+                        <div class="chart-label">Apr 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="May 2025: 452,423 natural / 73,154 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:143px"></div>
+                            <div class="chart-bar juridiska" style="height:23px"></div>
+                        </div>
+                        <div class="chart-label">May 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jun 2025: 466,794 natural / 74,718 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:148px"></div>
+                            <div class="chart-bar juridiska" style="height:23px"></div>
+                        </div>
+                        <div class="chart-label">Jun 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jul 2025: 482,069 natural / 76,200 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:153px"></div>
+                            <div class="chart-bar juridiska" style="height:24px"></div>
+                        </div>
+                        <div class="chart-label">Jul 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Aug 2025: 495,184 natural / 77,451 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:157px"></div>
+                            <div class="chart-bar juridiska" style="height:24px"></div>
+                        </div>
+                        <div class="chart-label">Aug 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Sep 2025: 508,024 natural / 78,840 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:161px"></div>
+                            <div class="chart-bar juridiska" style="height:25px"></div>
+                        </div>
+                        <div class="chart-label">Sep 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Oct 2025: 521,286 natural / 80,224 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:165px"></div>
+                            <div class="chart-bar juridiska" style="height:25px"></div>
+                        </div>
+                        <div class="chart-label">Oct 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Nov 2025: 532,820 natural / 81,422 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:169px"></div>
+                            <div class="chart-bar juridiska" style="height:25px"></div>
+                        </div>
+                        <div class="chart-label">Nov 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Dec 2025: 543,991 natural / 82,640 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:172px"></div>
+                            <div class="chart-bar juridiska" style="height:26px"></div>
+                        </div>
+                        <div class="chart-label">Dec 2025</div>
+                    </div>
+                    <div class="chart-bar-group" title="Jan 2026: 558,929 natural / 84,181 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:177px"></div>
+                            <div class="chart-bar juridiska" style="height:26px"></div>
+                        </div>
+                        <div class="chart-label">Jan 2026</div>
+                    </div>
+                    <div class="chart-bar-group" title="Feb 2026: 566,947 natural / 85,131 legal">
+                        <div class="chart-bars">
+                            <div class="chart-bar fiziska" style="height:180px"></div>
+                            <div class="chart-bar juridiska" style="height:27px"></div>
+                        </div>
+                        <div class="chart-label">Feb 2026</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-legend">
+                <span><span class="legend-dot" style="background:#00d9ff"></span>Natural persons</span>
+                <span><span class="legend-dot" style="background:#00ff88"></span>Legal entities</span>
+            </div>
+        </div>
+
+        <!-- TECHCRUNCH NEWS -->
+        <div class="section">
+            <h2>TechCrunch Headlines</h2>
+            <div class="news-item">
+                <a href="https://techcrunch.com/2026/02/14/homeland-security-reportedly-sent-hundreds-of-subpoenas-seeking-to-unmask-anti-ice-accounts/" target="_blank">Homeland Security reportedly sent hundreds of subpoenas seeking to unmask anti-ICE accounts</a>
+            </div>
+            <div class="news-item">
+                <a href="https://techcrunch.com/2026/02/14/is-safety-is-dead-at-xai/" target="_blank">Is safety ‘dead’ at xAI?</a>
+            </div>
+            <div class="news-item">
+                <a href="https://techcrunch.com/2026/02/14/stacy-brown-philpot-cherryrock-capital-vc/" target="_blank">In a changed VC landscape, this exec is doubling down on overlooked founders</a>
+            </div>
+            <div class="news-item">
+                <a href="https://techcrunch.com/2026/02/14/clueless-inspired-app-alta-partners-with-brand-public-school-to-start-integrating-styling-tools-into-websites/" target="_blank">‘Clueless’ -inspired app Alta partners with brand Public School to start integrating styling tools into websites</a>
+            </div>
+            <div class="news-item">
+                <a href="https://techcrunch.com/2026/02/14/hollywood-isnt-happy-about-the-new-seedance-2-0-video-generator/" target="_blank">Hollywood isn’t happy about the new Seedance 2.0 video generator</a>
+            </div>
+        </div>
+
+        <!-- DIGITAL GOVERNMENT NEWS -->
+        <div class="section">
+            <h2>BBC Technology News</h2>
+            <div class="news-item">
+                <a href="https://www.bbc.com/news/articles/cn87gj9k301o?at_medium=RSS&at_campaign=rss" target="_blank">Stroke survivors trial new at-home tech: 'It's given me my freedom back'</a>
+            </div>
+            <div class="news-item">
+                <a href="https://www.bbc.com/news/articles/cp8533g3201o?at_medium=RSS&at_campaign=rss" target="_blank">John Wick game starring Keanu Reeves unveiled at PlayStation showcase</a>
+            </div>
+            <div class="news-item">
+                <a href="https://www.bbc.com/news/articles/cwy8dxz1g7zo?at_medium=RSS&at_campaign=rss" target="_blank">Amazon's Ring ends deal with surveillance firm after backlash</a>
+            </div>
+            <div class="news-item">
+                <a href="https://www.bbc.com/news/articles/cy4wnw04e8wo?at_medium=RSS&at_campaign=rss" target="_blank">AI coding platform's flaws allow BBC reporter to be hacked</a>
+            </div>
+            <div class="news-item">
+                <a href="https://www.bbc.com/news/articles/cz6ejedj59no?at_medium=RSS&at_campaign=rss" target="_blank">Porn site fined £800,000 for not rolling out age checks</a>
+            </div>
+        </div>
+
+        </div><!-- end Daily tab -->
+
+        <!-- MONDAY TAB -->
+        <div id="tab-monday" class="tab-content">
+        <div class="section">
+            <h2>Cabinet Sitting - R.Cudars Items</h2>
+            <div class="cabinet-meeting-info">
+                Next sitting: <strong>17.02.2026. 12:00</strong>
+                | <a href="https://tapportals.mk.gov.lv/meetings/cabinet_ministers/534a7f7b-baaf-4f1e-8daa-b6228d38474e" target="_blank">Full agenda</a>
+            </div>
+            <div class="cabinet-section-name">1. Saskaņotie tiesību aktu projekti (A)</div>
+            <div class="cabinet-item-wrapper">
+              <div class="cabinet-item cabinet-toggle" onclick="toggleSummary('cab-summary-0')">
+                <span class="toggle-arrow">&#9654;</span><a href="https://tapportals.mk.gov.lv/legal_acts/74420668-85d6-4484-9bae-d0887c08a2eb" target="_blank" onclick="event.stopPropagation()">
+                    <span class="cabinet-ta-id">25-TA-3004</span>Noteikumu projekts "Grozījums Ministru kabineta 2014. gada 8. jūlija noteikumos Nr. 392 "Teritorijas attīstības plānošanas informācijas sistēmas noteikumi""
+                </a>
+              </div>
+              <div class="cabinet-summary" id="cab-summary-0">
+                <div class="summary-label">Essence of the regulation</div>
+                <div class="summary-text"># Analīze
+
+**1. Pamatojums:**
+Teritorijas attīstības plānošanas likuma 7. panta noteiktā delegācija Ministru kabinetam regulēt TAPIS datu apstrādes kārtību, kā arī Ministru kabineta protokollēmums par Apgrūtināto teritoriju informācijas sistēmas datu pieejamības ierobežošanu.
+
+**2. Mērķis:**
+Nodrošināt, ka ģeoportālā attēlotā informācija par nekustamajiem īpašumiem, kas svarīga nacionālajai drošībai un valsts aizsardzībai, ir pieejama tikai identificētām personām.
+
+**3. Risinājums:**
+MK noteikumos Nr. 392 tiek papildināts jauns 37.2 punkts, kas nosaka sistēmas pārzinim pienākumu nodrošināt, ka 30.2.8. un 30.2.9. apakšpunktā minētā informācija par nekustamiem īpašumiem ģeoportālā tiek attēlota tikai identificētām personām atbilstoši normatīvajiem aktiem par nacionālajai drošībai un valsts aizsardzībai svarīgas informācijas aizsardzību. Tādējādi tiek ieviests piekļuves ierobežojums, pamatojoties uz valsts drošības prasībām.</div>
+                <div class="summary-label">Decision</div>
+                <div class="summary-decision">1.Pieņemt iesniegto noteikumu projektu. 2. Valsts kancelejai sagatavot noteikumu projektu parakstīšanai.</div>
+              </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Parliament This Week</h2>
+            <div class="parl-week-range">16.02.2026 – 20.02.2026</div>
+            <div class="parl-group-header">
+                <span class="parl-date">Tuesday, 17.02. 10:00</span> — Cilvēktiesību un sabiedrisko lietu komisijas sēde
+            </div>
+            <div class="parl-item ">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/20C641CBFBDD162AC2258D9C00626014?OpenDocument" target="_blank">Par civilās aizsardzības sistēmas atbilstību cilvēku ar invaliditāti vajadzībām ārkārtas situācijās. Uzaicināti: Iekšlietu ministrijas, Aizsardzības ministrijas,Viedās administrācijas un reģionālās attīstības ministrijas, Labklājības ministrijas, Valsts ugunsdzēsības un glābšanas dienesta, Rīgas val...</a>
+                <span class="parl-match-badge keyword">VARAM</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Tuesday, 17.02. 10:00</span> — Valsts pārvaldes un pašvaldības komisijas sēde
+            </div>
+            <div class="parl-item content-match">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/A5DBB1D968237817C2258D9C00542BFC?OpenDocument" target="_blank">1. Valsts digitālās attīstības aģentūras un Centrālās vēlēšanu komisijas ziņojums par atbildīgo institūciju līdzšinējo paveikto un turpmāk plānotajām darbībām Saeimas vēlēšanu sagatavošanas un norises nodrošināšanai. Uzaicināti : Valsts digitālās attīstības aģentūras, Centrālās vēlēšanu komisijas, V...</a>
+                <span class="parl-match-badge content">Digital topic</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Wednesday, 18.02. 08:30</span> — Cilvēktiesību un sabiedrisko lietu komisijas Latgales apakškomisijas sēde
+            </div>
+            <div class="parl-item ">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/049DCAE2B777C155C2258D95003E10CE?OpenDocument" target="_blank">2. Par nākotnes risinājumiem pašvaldības uzņēmuma SIA Austrumlatvijas koncertzāle pārvaldei. Uzaicināti: Kultūras ministrijas, Viedās administrācijas un reģionālās attīstības ministrijas, Rēzeknes valstspilsētas pašvaldības, pašvaldības uzņēmuma SIA Austrumlatvijas koncertzāle vadības, Latgales plān...</a>
+                <span class="parl-match-badge keyword">VARAM</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Wednesday, 18.02. 10:00</span> — Valsts pārvaldes un pašvaldības komisijas sēde
+            </div>
+            <div class="parl-item content-match">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/0FC5B60E1AB0AAA9C2258D9C00542DC7?OpenDocument" target="_blank">2. Likumprojekts “Grozījumi Vēlētāju reģistra likumā” (Nr. 1183/Lp14) pirms otrā lasījuma. Uzaicināti: Valsts kancelejas, Pilsonības un migrācijas lietu pārvaldes, Ieslodzījumu vietu pārvaldes, Tieslietu ministrijas, Viedās administrācijas un reģionālās attīstības ministrijas, Valsts digitālās attīs...</a>
+                <span class="parl-match-badge content">Digital topic</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Wednesday, 18.02. 10:15</span> — Cilvēktiesību un sabiedrisko lietu komisijas sēde (turpinājums)
+            </div>
+            <div class="parl-item ">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/260C35DEC9155594C2258D9D00235E66?OpenDocument" target="_blank">Par izklaides trokšņu tiesisko regulējumu un iedzīvotāju tiesībām uz privāto dzīvi un labvēlīgu vidi. Uzaicināti: , Tiesībsarga biroja, Ekonomikas ministrijas, Klimata un enerģētikas ministrijas, Viedās administrācijas un reģionālās attīstības ministrijas, Veselības ministrijas, Tieslietu ministrija...</a>
+                <span class="parl-match-badge keyword">VARAM</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Wednesday, 18.02. 12:00</span> — Publisko izdevumu un revīzijas komisijas sēde
+            </div>
+            <div class="parl-item ">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/A51D0CE45DD91EF9C2258D9B00438BBE?OpenDocument" target="_blank">2. Dažādi Uzaicināti: Valsts kontrole, Viedās administrācijas un reģionālās attīstības ministrija, VAS “Ceļu satiksmes drošības direkcija”, Dienvidkurzemes novads, Saldus novads, Preiļu novads, Jelgavas novads, Rēzeknes novads.</a>
+                <span class="parl-match-badge keyword">VARAM</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Wednesday, 18.02. 12:00</span> — Ilgtspējīgas attīstības komisijas sēde
+            </div>
+            <div class="parl-item ">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/9B29DEB69BD3274FC2258D9B00403C7A?OpenDocument" target="_blank">2. Augsnes monitoringa direktīvas ieviešana. Ziņo : Zemkopības ministrija un Valsts augu aizsardzības dienests Uzaicināti : EM, FM, Valsts augu aizsardzības dienests, VARAM, LDDK, LTRK, biedrība “Latvijas Zemnieku federācija,” biedrība “Zemnieku Saeima”, Vides konsultatīvā padome, Latvijas Permakult...</a>
+                <span class="parl-match-badge keyword">VARAM</span>
+            </div>
+            <div class="parl-group-header">
+                <span class="parl-date">Wednesday, 18.02. 13:10</span> — Ārlietu komisijas Baltijas lietu apakškomisijas sēde
+            </div>
+            <div class="parl-item ">
+                <a href="https://titania.saeima.lv/LIVS/SaeimasNotikumi.nsf/0/169CB8D9112B493AC2258D9C003C456C?OpenDocument" target="_blank">27. februārī. Baltijas valstu spēju apvienošana vides uzraudzības un izpētes jomā Sadarbību vides uzraudzības jomā veicinošu instrumentu un tehnoloģiju izpēte ; Reāllaika vides uzraudzības ieviešana Baltijas valstīs ; Jaunu tehnoloģiju pielietošana, nodrošinot vides ietekmes precīzu uzraudzību un pr...</a>
+                <span class="parl-match-badge keyword">VARAM</span>
+            </div>
+        </div>
+
+        </div><!-- end Monday tab -->
+
+        <footer>
+            <p>Built with Python | Your First AI Agent</p>
+        </footer>
+    </div>
+
+    <script>
+    function switchTab(name) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        event.target.classList.add('active');
+    }
+    function toggleSummary(id) {
+        var el = document.getElementById(id);
+        el.classList.toggle('open');
+        var arrow = el.parentElement.querySelector('.toggle-arrow');
+        if (arrow) arrow.style.transform = el.classList.contains('open') ? 'rotate(90deg)' : '';
+    }
+    </script>
+</body>
+</html>
