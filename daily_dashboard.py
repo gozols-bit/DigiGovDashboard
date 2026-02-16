@@ -523,17 +523,23 @@ DIGITAL_TOPICS = [
 
 
 def get_parliament_agenda():
-    """Fetch next week's Parliament commission agendas and find VARAM/digital items"""
+    """Fetch THIS week's Parliament commission agendas and find VARAM/digital items"""
     print("Fetching Parliament commission agendas...")
 
     try:
-        # Determine next week Mon-Fri
+        # Determine THIS week Mon-Fri (including today)
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        days_until_monday = (7 - today.weekday()) % 7
-        if days_until_monday == 0:
-            days_until_monday = 7
-        next_monday = today + timedelta(days=days_until_monday)
-        week_dates = [next_monday + timedelta(days=i) for i in range(5)]
+        
+        # Find this week's Monday
+        days_since_monday = today.weekday()  # 0=Monday, 1=Tuesday, etc.
+        this_monday = today - timedelta(days=days_since_monday)
+        
+        # If today is Saturday or Sunday, get next week instead
+        if today.weekday() >= 5:  # 5=Saturday, 6=Sunday
+            this_monday = this_monday + timedelta(days=7)
+        
+        # Get Mon-Fri of this week
+        week_dates = [this_monday + timedelta(days=i) for i in range(5)]
 
         results = []
 
@@ -602,7 +608,7 @@ def get_parliament_agenda():
                 except Exception:
                     continue
 
-        print(f"  Scanned {sum(1 for d in week_dates for _ in [1])} days, found {len(results)} relevant item(s)")
+        print(f"  Scanned {len(week_dates)} days, found {len(results)} relevant item(s)")
         return {
             "week_start": week_dates[0].strftime("%d.%m.%Y"),
             "week_end": week_dates[-1].strftime("%d.%m.%Y"),
